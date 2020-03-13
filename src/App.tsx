@@ -86,9 +86,37 @@ function App() {
     const helper = handleSvg.append("rect")
       .attr("width", width)
       .attr("height", height)
-      // .style("fill", "none")
+      .style("fill", "none")
       .style("pointer-events", "all")
 
+    const dynamicReferenceLine = handleSvg.append("g");
+
+    helper.on("touchmove mousemove", function () {
+      // 座標位置
+      // d3.mouse(this) could be d3.mouse(d3.event.currentTarget)
+      const [pointX, pointY]: [number, number] = d3.mouse(this)
+      // 反推目前滑鼠在的時間
+      // let date: Date = xScale.invert(pointX);
+
+      // 參考線
+      dynamicReferenceLine
+        .style("display", null)
+        .style("pointer-events", "none")
+      dynamicReferenceLine.selectAll("line.vertical-line")
+        .data([null])
+        .join("line")
+        .attr("class", "vertical-line")
+        .style("stroke", "red")
+        .style("stroke-dasharray", "3,3")
+        .style("opacity", 0.5)
+        .attr("y1", 0)
+        .attr("y2", height)
+        .attr("transform", `translate(${pointX},0)`)
+    });
+
+    helper.on("touchend mouseout", () => {
+      dynamicReferenceLine.style("display", "none");
+    });
     /* ********** 透明版 END ********** */
   }, [dataset, svgRef.current])
 
