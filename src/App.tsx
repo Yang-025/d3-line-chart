@@ -91,13 +91,7 @@ function App() {
 
     const dynamicReferenceLine = handleSvg.append("g");
 
-    helper.on("touchmove mousemove", function () {
-      // 座標位置
-      // d3.mouse(this) could be d3.mouse(d3.event.currentTarget)
-      const [pointX, pointY]: [number, number] = d3.mouse(this)
-      // 反推目前滑鼠在的時間
-      // let date: Date = xScale.invert(pointX);
-
+    const drawDynamicReferenceLine = (pointX: number) => {
       // 參考線
       dynamicReferenceLine
         .style("display", null)
@@ -112,6 +106,17 @@ function App() {
         .attr("y1", 0)
         .attr("y2", height)
         .attr("transform", `translate(${pointX},0)`)
+    }
+
+    helper.on("touchmove mousemove", function () {
+      // 座標位置
+      // d3.mouse(this) could be d3.mouse(d3.event.currentTarget)
+      const [pointX, pointY]: [number, number] = d3.mouse(this)
+      // 反推目前滑鼠在的時間
+      // let mouseDate: Date = xScale.invert(pointX);
+
+      // 畫參考線
+      drawDynamicReferenceLine(pointX)
     });
 
     helper.on("touchend mouseout", () => {
