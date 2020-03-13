@@ -1,24 +1,95 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 
 import originData from './data/data';
+import { IDataset } from './interface'
 import './App.css';
 
-console.log(originData)
 
 function App() {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const margin = { top: 20, right: 30, bottom: 30, left: 40 };
+  const width = 770 - margin.left - margin.right;
+  const height = 400 - margin.top - margin.bottom;
+  const parseTime = d3.timeParse('%Y');
+
+  const dataset: IDataset[] = originData.map(x => {
+    return {
+      ...x,
+      year: parseTime(x.year) as Date
+    }
+  })
+
+  const xScale = d3.scaleTime()
+    // .domain([
+    //   d3.min(dataset, d => d.year) as Date,
+    //   d3.max(dataset, d => d.year) as Date,
+    // ])
+    .domain(d3.extent(dataset, (d) => d.year) as Date[])
+    .range([0, width])
+
+  const yScale = d3.scaleLinear()
+    .domain([0, d3.max(dataset, d => d.homerun) as number])
+    .range([height, 0])
+
+  type DataType = { year: any, homerun: any }
+  const line = d3.line<DataType>()
+    .x((d) => xScale(d.year))
+    .y((d) => yScale(d.homerun))
+
+  const xAxis = d3
+    .axisBottom(xScale)
+    .ticks(dataset.length);
+
+  const yAxis = d3
+    .axisLeft(yScale);
+
+
+  useEffect(() => {
+    if (!svgRef.current) {
+      return;
+    }
+    const svg = d3.select(svgRef.current)
+    const handleSvg = svg
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr('transform', `translate(${margin.left},${margin.top})`)
+
+    /* ********** x軸 ********** */
+    handleSvg.append('g')
+      .attr('class', 'x-axis')
+      .attr('transform', `translate(0,${height})`)
+      .call(xAxis)
+    /* ********** x軸 END ********** */
+
+    /* ********** y軸 ********** */
+    handleSvg.append('g')
+      .attr('class', 'y-axis')
+      .attr('transform', `translate(0,0)`)
+      .call(yAxis)
+    /* ********** y軸 END ********** */
+
+    /* ********** 折線 ********** */
+    handleSvg.append("path")
+      .datum(dataset)
+      .attr("class", "line")
+      .attr("fill", "none")
+      .attr("stroke", "steelblue")
+      .attr("stroke-width", 1.5)
+      .attr("stroke-linejoin", "round")
+      .attr("stroke-linecap", "round")
+      .attr("d", line);
+    /* ********** 折線 END ********** */
+  }, [dataset, svgRef.current])
+
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app">
+      <div>
+        <h3>{`svg ${width}* ${height}`}</h3>
+        <svg ref={svgRef} />
+      </div>
     </div>
   );
 }
