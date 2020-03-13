@@ -90,6 +90,7 @@ function App() {
       .style("pointer-events", "all")
 
     const dynamicReferenceLine = handleSvg.append("g");
+    const tooltip = handleSvg.append("g");
 
     const drawDynamicReferenceLine = (pointX: number) => {
       // 參考線
@@ -108,12 +109,80 @@ function App() {
         .attr("transform", `translate(${pointX},0)`)
     }
 
+
+    const drawTooltip = (groupElement: any, value: string[] | null = null) => {
+      if (!value) { return groupElement.style("display", "none"); }
+
+      groupElement
+        .style("display", null)
+        .style("pointer-events", "none");
+
+      // tooltip:文字
+      const tooltipText = groupElement.selectAll("text.tooltip-text")
+        .data([null])
+        .join("text")
+        .attr("class", "tooltip-text")
+        .style("font-size", "16px")
+        .call((text: any) => text
+          .selectAll("tspan")
+          .data(value)
+          .join("tspan")
+          .attr("x", 0)
+          .attr("y", (d: string, i: number) => `${i * 1.1}em`)
+          .style("font-weight", (_: any, i: number) => i ? null : "bold")
+          .text((d: string) => d));
+
+      const bbox = (tooltipText.node() as SVGSVGElement).getBBox();
+      // tooltip:外框
+      groupElement.selectAll("rect.tooltip-rect")
+        .data([null])
+        .join("rect")
+        .attr("class", "tooltip-rect")
+        .attr("x", bbox.x)
+        .attr("y", bbox.y)
+        .attr("width", bbox.width)
+        .attr("height", bbox.height)
+        .style("fill", "#FCC100")
+        // .style("fill-opacity", ".3")
+        .style("stroke", "#666")
+        .style("stroke-width", "1.5px");
+
+      groupElement.selectAll("text.tooltip-text").remove()
+      groupElement.selectAll("text.tooltip-text")
+        .data([null])
+        .join("text")
+        .attr("class", "tooltip-text")
+        .style("font-size", "16px")
+        .call((text: any) => text
+          .selectAll("tspan")
+          .data(value)
+          .join("tspan")
+          .attr("x", 0)
+          .attr("y", (d: string, i: number) => `${i * 1.1}em`)
+          .style("font-weight", (_: any, i: number) => i ? null : "bold")
+          .text((d: string) => d));
+    }
+
     helper.on("touchmove mousemove", function () {
       // 座標位置
       // d3.mouse(this) could be d3.mouse(d3.event.currentTarget)
       const [pointX, pointY]: [number, number] = d3.mouse(this)
       // 反推目前滑鼠在的時間
-      // let mouseDate: Date = xScale.invert(pointX);
+      let mouseDate: Date = xScale.invert(pointX);
+
+      const bisectDate = d3.bisector(function (d: IDataset) { return d.year; }).left;
+      let index = bisectDate(dataset, mouseDate, 1);
+      const a: IDataset = dataset[index - 1]
+      const b: IDataset = dataset[index]
+      // 最接近哪一筆資料
+      const closerData: IDataset = (mouseDate as any) - (a.year as any) > (b.year as any) - (mouseDate as any) ? b : a
+
+      let tooltipX = xScale(closerData.year) + 10
+      tooltip
+        .attr("transform", `translate(${tooltipX},${yScale(closerData.homerun)})`)
+        .call(drawTooltip, [`${d3.timeFormat('%Y')(closerData.year)}`, `全壘打：${closerData.homerun}`])
+
+
 
       // 畫參考線
       drawDynamicReferenceLine(pointX)
@@ -121,6 +190,7 @@ function App() {
 
     helper.on("touchend mouseout", () => {
       dynamicReferenceLine.style("display", "none");
+      tooltip.style("display", "none");
     });
     /* ********** 透明版 END ********** */
   }, [dataset, svgRef.current])
