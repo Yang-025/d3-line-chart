@@ -81,6 +81,15 @@ function App() {
       .attr("stroke-linecap", "round")
       .attr("d", line);
     /* ********** 折線 END ********** */
+
+    /* ********** 透明版 ********** */
+    const helper = handleSvg.append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      // .style("fill", "none")
+      .style("pointer-events", "all")
+
+    /* ********** 透明版 END ********** */
   }, [dataset, svgRef.current])
 
 
