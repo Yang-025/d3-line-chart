@@ -196,18 +196,24 @@ function App() {
       const closerData: IDataset = (mouseDate as any) - (a.year as any) > (b.year as any) - (mouseDate as any) ? b : a
 
       let tooltipX = xScale(closerData.year) + 10
-
       let maxYear = d3.max(dataset, d => d.year) as Date
       // 換個方向
       if (xScale(maxYear) - pointX < 90) {
         tooltipX = xScale(closerData.year) - 100
       }
+
+      // 靠很近才顯示
+      if (Math.abs(xScale(closerData.year) - pointX) <= 5) {
       tooltip
         .attr("transform", `translate(${tooltipX},${yScale(closerData.homerun)})`)
         .call(drawTooltip, [`${d3.timeFormat('%Y')(closerData.year)}`, `全壘打：${closerData.homerun}`])
 
       highlightCircle
         .call(drawHighlightCircle, { x: xScale(closerData.year), y: yScale(closerData.homerun) })
+      } else {
+        tooltip.call(drawTooltip, null)
+        highlightCircle.call(drawHighlightCircle, null)
+      }
 
       // 畫參考線
       drawDynamicReferenceLine(pointX)
