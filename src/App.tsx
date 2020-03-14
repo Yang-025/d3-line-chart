@@ -196,6 +196,12 @@ function App() {
       const closerData: IDataset = (mouseDate as any) - (a.year as any) > (b.year as any) - (mouseDate as any) ? b : a
 
       let tooltipX = xScale(closerData.year) + 10
+
+      let maxYear = d3.max(dataset, d => d.year) as Date
+      // 換個方向
+      if (xScale(maxYear) - pointX < 90) {
+        tooltipX = xScale(closerData.year) - 100
+      }
       tooltip
         .attr("transform", `translate(${tooltipX},${yScale(closerData.homerun)})`)
         .call(drawTooltip, [`${d3.timeFormat('%Y')(closerData.year)}`, `全壘打：${closerData.homerun}`])
