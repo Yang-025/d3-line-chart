@@ -91,6 +91,7 @@ function App() {
 
     const dynamicReferenceLine = handleSvg.append("g");
     const tooltip = handleSvg.append("g");
+    const highlightCircle = handleSvg.append("g");
 
     const drawDynamicReferenceLine = (pointX: number) => {
       // 參考線
@@ -163,6 +164,23 @@ function App() {
           .text((d: string) => d));
     }
 
+    const drawHighlightCircle = (groupElement: any, value: { x: number, y: number } | null = null) => {
+      if (!value) { return groupElement.style("display", "none"); }
+      
+      // circle
+      groupElement.style("display", null)
+        .style("pointer-events", "none")
+      groupElement.selectAll("circle.highlight-circle")
+        .data([null])
+        .join("circle")
+        .attr("class", "highlight-circle")
+        .style("fill", "#FCC100")
+        .style("stroke", "#000")
+        .style("stroke-width", "1px")
+        .attr("r", 6)
+        .attr("transform", `translate(${value.x},${value.y})`)
+    }
+
     helper.on("touchmove mousemove", function () {
       // 座標位置
       // d3.mouse(this) could be d3.mouse(d3.event.currentTarget)
@@ -182,6 +200,8 @@ function App() {
         .attr("transform", `translate(${tooltipX},${yScale(closerData.homerun)})`)
         .call(drawTooltip, [`${d3.timeFormat('%Y')(closerData.year)}`, `全壘打：${closerData.homerun}`])
 
+      highlightCircle
+        .call(drawHighlightCircle, { x: xScale(closerData.year), y: yScale(closerData.homerun) })
 
 
       // 畫參考線
@@ -191,6 +211,7 @@ function App() {
     helper.on("touchend mouseout", () => {
       dynamicReferenceLine.style("display", "none");
       tooltip.style("display", "none");
+      highlightCircle.style("display", "none");
     });
     /* ********** 透明版 END ********** */
   }, [dataset, svgRef.current])
