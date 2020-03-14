@@ -111,7 +111,7 @@ function App() {
     }
 
 
-    const drawTooltip = (groupElement: any, value: string[] | null = null) => {
+    const drawTooltip = (groupElement: d3.Selection<SVGGElement, any, any, any>, value: string[] | null = null) => {
       if (!value) { return groupElement.style("display", "none"); }
 
       groupElement
@@ -164,9 +164,9 @@ function App() {
           .text((d: string) => d));
     }
 
-    const drawHighlightCircle = (groupElement: any, value: { x: number, y: number } | null = null) => {
+    const drawHighlightCircle = (groupElement: d3.Selection<SVGGElement, any, any, any>, value: { x: number, y: number } | null = null) => {
       if (!value) { return groupElement.style("display", "none"); }
-      
+
       // circle
       groupElement.style("display", null)
         .style("pointer-events", "none")
@@ -202,7 +202,6 @@ function App() {
 
       highlightCircle
         .call(drawHighlightCircle, { x: xScale(closerData.year), y: yScale(closerData.homerun) })
-
 
       // 畫參考線
       drawDynamicReferenceLine(pointX)
