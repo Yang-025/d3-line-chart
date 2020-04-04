@@ -148,20 +148,7 @@ function App() {
         .style("stroke", "#666")
         .style("stroke-width", "1.5px");
 
-      groupElement.selectAll("text.tooltip-text").remove()
-      groupElement.selectAll("text.tooltip-text")
-        .data([null])
-        .join("text")
-        .attr("class", "tooltip-text")
-        .style("font-size", "16px")
-        .call((text: any) => text
-          .selectAll("tspan")
-          .data(value)
-          .join("tspan")
-          .attr("x", 0)
-          .attr("y", (d: string, i: number) => `${i * 1.1}em`)
-          .style("font-weight", (_: any, i: number) => i ? null : "bold")
-          .text((d: string) => d));
+      groupElement.selectAll("text.tooltip-text").raise()
     }
 
     const drawHighlightCircle = (groupElement: d3.Selection<SVGGElement, any, any, any>, value: { x: number, y: number } | null = null) => {
@@ -204,12 +191,12 @@ function App() {
 
       // 靠很近才顯示
       if (Math.abs(xScale(closerData.year) - pointX) <= 5) {
-      tooltip
-        .attr("transform", `translate(${tooltipX},${yScale(closerData.homerun)})`)
-        .call(drawTooltip, [`${d3.timeFormat('%Y')(closerData.year)}`, `全壘打：${closerData.homerun}`])
+        tooltip
+          .attr("transform", `translate(${tooltipX},${yScale(closerData.homerun)})`)
+          .call(drawTooltip, [`${d3.timeFormat('%Y')(closerData.year)}`, `全壘打：${closerData.homerun}`])
 
-      highlightCircle
-        .call(drawHighlightCircle, { x: xScale(closerData.year), y: yScale(closerData.homerun) })
+        highlightCircle
+          .call(drawHighlightCircle, { x: xScale(closerData.year), y: yScale(closerData.homerun) })
       } else {
         tooltip.call(drawTooltip, null)
         highlightCircle.call(drawHighlightCircle, null)
